@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector Databases - VivaWorks</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/theme/white.min.css">
+    <style>
+        .reveal pre {
+            font-size: 0.7em;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+        }
+        .reveal section img {
+            max-height: 550px;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+        }
+        .reveal h1, .reveal h2 {
+            color: #2d8a54;
+            margin-bottom: 30px;
+        }
+        .reveal p {
+            color: #333;
+        }
+        .reveal ul {
+            color: #333;
+        }
+        .reveal a {
+            color: #2d8a54;
+        }
+        .reveal .controls {
+            color: #2d8a54;
+        }
+        .reveal .progress {
+            background: rgba(0, 0, 0, 0.1);
+            color: #2d8a54;
+        }
+        .code-block {
+            background-color: #f8f8f8;
+            border-left: 3px solid #2d8a54;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <!-- Slide 1: Título -->
+            <section>
+                <h1>Vector Databases</h1>
+                <p>Uma jornada pelos bancos de dados vetoriais</p>
+            </section>
+
+            <!-- Slide 2: Introdução -->
+            <section>
+                <h2>Introdução</h2>
+                <p>Dados são cruciais para empresas modernas.</p>
+                <p>A forma de lidar com dados mudou drasticamente.</p>
+            </section>
+
+            <!-- Slide 3: Começo - Dados Estruturados -->
+            <section>
+                <h2>Do início...</h2>
+                <p>Dados simples em tabelas relacionais.</p>
+                <img src="image-1.png" alt="Dados estruturados em tabelas relacionais">
+            </section>
+
+            <!-- Slide 4: Evolução para NoSQL -->
+            <section>
+                <h2>Evolução dos dados</h2>
+                <p>Crescimento de dados não estruturados.</p>
+                <img src="image.png" alt="Crescimento de dados não estruturados">
+            </section>
+
+            <!-- Slide 5: Desafios do NoSQL -->
+            <section>
+                <h2>Desafios do NoSQL</h2>
+                <p>Surge a necessidade de bancos de dados vetoriais.</p>
+                <img src="image-3.png" alt="Bancos de dados vetoriais">
+            </section>
+
+            <!-- Slide 6: Importância dos BD Vetoriais -->
+            <section>
+                <h2>BD Vetoriais + LLMs</h2>
+                <p>Melhor contexto e eficiência.</p>
+                <img src="image-5.png" alt="LLMs e bancos de dados vetoriais">
+            </section>
+
+            <!-- Slide 7: O que são BD Vetoriais -->
+            <section>
+                <h2>Bancos de dados vetoriais</h2>
+                <p>Dados como vetores de alta dimensão.</p>
+                <p>Otimizados para busca por similaridade.</p>
+            </section>
+
+            <!-- Slide 8: O que é um vetor -->
+            <section>
+                <h2>O que é um vetor?</h2>
+                <p>Lista de números representando características.</p>
+                <pre><code data-trim>
+# Exemplo de vetor
+vetor = [0.1, 0.5, 0.3, 0.7]
+                </code></pre>
+            </section>
+
+            <!-- Slide 9: Como criar vetores -->
+            <section>
+                <h2>Criação de vetores</h2>
+                <p>Embeddings via técnicas de ML.</p>
+                <pre><code data-trim data-noescape>
+import openai
+openai.api_key = "api-key"
+def create_vector(text):
+    response = openai.Embedding.create(
+        input=text,
+        model="text-embedding-ada-002"
+    )
+    return response['data'][0]['embedding']
+text = "Text example for vector creation"
+vector = create_vector(text)
+print(vector) # [0.1, 0.5, 0.3, 0.7]
+                </code></pre>
+                <img src="image-6.png" alt="Processo de criação de vetores">
+            </section>
+
+            <!-- Slide 10: Armazenamento de vetores -->
+            <section>
+                <h2>Armazenamento de vetores</h2>
+                <p>Bancos de dados vetoriais são a solução.</p>
+                <img src="image-4.png" alt="Armazenamento de vetores">
+            </section>
+
+            <!-- Slide 11: Qdrant -->
+            <section>
+                <h2>Qdrant</h2>
+                <p>BD vetorial de código aberto.</p>
+                <p>Otimizado para consultas de similaridade.</p>
+            </section>
+
+            <!-- Slide 12: Instalação Qdrant -->
+            <section>
+                <h2>Instalação do Qdrant</h2>
+                <pre><code data-trim>
+docker run -p 6333:6333 qdrant/qdrant
+                </code></pre>
+            </section>
+
+            <!-- Slide 13: Usando Qdrant - Criação de coleção -->
+            <section>
+                <h2>Criando uma coleção</h2>
+                <pre><code data-trim data-noescape>
+import requests
+
+def create_collection(collection_name):
+    url = f"http://localhost:6333/collections/{collection_name}"
+    response = requests.put(url)
+    if response.status_code == 201:
+        print(f"Collection '{collection_name}' created successfully.")
+    else:
+        print(f"Error creating collection: {response.text}")
+collection_name = "vivaworks_example"
+create_collection(collection_name)
+                </code></pre>
+            </section>
+
+            <!-- Slide 14: Inserção de vetores -->
+            <section>
+                <h2>Inserindo vetores</h2>
+                <pre><code data-trim data-noescape>
+import requests
+import uuid
+
+def insert_vector(collection_name, vector_id, vector):
+    url = f"http://localhost:6333/collections/{collection_name}/points"
+    data = {
+        "points": [
+            {
+                "id": vector_id,
+                "vector": vector
+            }
+        ]
+    }
+    response = requests.post(url, json=data)
+    if response.status_code == 202:
+        print(f"Vector with ID '{vector_id}' inserted successfully.")
+    else:
+        print(f"Error inserting vector: {response.text}")
+collection_name = "vivaworks_example"
+vector_id = uuid.uuid4().hex
+vector = [0.1, 0.5, 0.3, 0.7]
+insert_vector(collection_name, vector_id, vector)
+                </code></pre>
+            </section>
+
+            <!-- Slide 15: Pesquisa de vetores -->
+            <section>
+                <h2>Pesquisando vetores</h2>
+                <pre><code data-trim data-noescape>
+import requests
+
+def search_vectors(collection_name, query_vector, limit=5):
+    url = f"http://localhost:6333/collections/{collection_name}/points/search"
+    data = {
+        "vector": query_vector,
+        "top": limit
+    }
+    response = requests.post(url, json=data)
+    if response.status_code == 200:
+        results = response.json()
+        print(f"Search results: {results}")
+    else:
+        print(f"Error searching vectors: {response.text}")
+collection_name = "vivaworks_example"
+query_vector = [0.1, 0.5, 0.3, 0.7]
+search_vectors(collection_name, query_vector)
+                </code></pre>
+            </section>
+
+            <!-- Slide 16: Qdrant com LLMs -->
+            <section>
+                <h2>Qdrant + LLMs</h2>
+                <p>Respostas mais precisas e contextuais.</p>
+            </section>
+
+            <!-- Slide 17-19: Exemplo com LLMs -->
+            <section>
+                <h2>Exemplo com LLMs</h2>
+                <pre><code data-trim data-noescape>
+import openai
+openai.api_key = "sua-chave-api-aqui"
+import requests
+import uuid
+
+# Cria vetor a partir de texto
+def create_vector(text):
+    response = openai.Embedding.create(
+        input=text,
+        model="text-embedding-ada-002"
+    )
+    return response['data'][0]['embedding']
+
+# Insere vetor no Qdrant
+def insert_vector(collection_name, vector_id, vector):
+    url = f"http://localhost:6333/collections/{collection_name}/points"
+    data = {
+        "points": [
+            {
+                "id": vector_id,
+                "vector": vector
+            }
+        ]
+    }
+    response = requests.post(url, json=data)
+    return response.status_code == 202
+
+# Busca vetores similares
+def search_vectors(collection_name, query_vector, limit=5):
+    url = f"http://localhost:6333/collections/{collection_name}/points/search"
+    data = {
+        "vector": query_vector,
+        "top": limit
+    }
+    response = requests.post(url, json=data)
+    if response.status_code == 200:
+        return response.json()['result']
+    return []
+
+# Gera resposta usando LLM
+def generate_answer(question, context):
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": f"Question: {question}\nContext: {context}"}
+        ]
+    )
+    return response['choices'][0]['message']['content']
+                </code></pre>
+            </section>
+
+            <!-- Slide 20: Vantagens de BD Vetoriais com LLMs -->
+            <section>
+                <h2>Vantagens</h2>
+                <ul>
+                    <li><strong>Eficiência:</strong> Apenas vetores relevantes</li>
+                    <li><strong>Contexto:</strong> Respostas mais precisas</li>
+                    <li><strong>Escalabilidade:</strong> Consultas eficientes</li>
+                    <li><strong>Flexibilidade:</strong> Múltiplos tipos de dados</li>
+                </ul>
+            </section>
+
+            <!-- Slide 21: Conclusão -->
+            <section>
+                <h2>Conclusão</h2>
+                <p>BD vetoriais + LLMs = Revolução na análise de dados</p>
+            </section>
+
+            <!-- Slide 22: Referências -->
+            <section>
+                <h2>Referências</h2>
+                <ul>
+                    <li><a href="https://qdrant.tech/documentation/">Qdrant Documentation</a></li>
+                    <li><a href="https://platform.openai.com/docs/api-reference">OpenAI API</a></li>
+                    <li><a href="https://www.pinecone.io/learn/vector-database/">Vector Databases Explained</a></li>
+                </ul>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/notes/notes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/markdown/markdown.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/highlight/highlight.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: true,
+            transition: 'slide',
+            plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+        });
+    </script>
+</body>
+</html>
