@@ -19,6 +19,8 @@ Mas mesmo os bancos de dados NoSQL enfrentam desafios quando se trata de lidar c
 
 São os bancos de dados vetoriais que permitem que as empresas aproveitem ao máximo seus dados, permitindo que o uso de LLMs (Modelos de Linguagem) e outras técnicas avançadas de aprendizado de máquina sejam aplicados com muito mais contexto e eficiência.
 
+![alt text](image-5.png)
+
 ## O que são bancos de dados vetoriais?
 
 Bancos de dados vetoriais são uma nova classe de bancos de dados projetados para lidar com dados em alta dimensão, como texto, imagens e áudio. Eles armazenam dados como vetores, que são representações numéricas de objetos, permitindo pesquisas eficientes e escaláveis.
@@ -53,6 +55,8 @@ vector = create_vector(text)
 print(vector) # [0.1, 0.5, 0.3, 0.7]
 ```
 
+![alt text](image-6.png)
+
 ## E como armazenamos esses vetores?
 
 Agora nós temos os vetores, precisamos armazená-los de forma eficiente para que possamos pesquisá-los rapidamente. É aí que entram os bancos de dados vetoriais.
@@ -60,6 +64,7 @@ Agora nós temos os vetores, precisamos armazená-los de forma eficiente para qu
 ![alt text](image-4.png)
 
 Nós vamos escolher o Qdrant como nosso banco de dados vetorial.
+
 
 ## O que é o Qdrant?
 
