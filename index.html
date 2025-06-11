@@ -6,6 +6,7 @@
     <title>Vector Databases - VivaWorks</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/theme/white.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/dracula.min.css">
     <style>
         .reveal pre {
             font-size: 0.7em;
@@ -20,6 +21,7 @@
             color: #2d8a54;
             margin-bottom: 30px;
         }
+
         .reveal p {
             color: #333;
         }
@@ -60,31 +62,23 @@
 
             <!-- Slide 3: Começo - Dados Estruturados -->
             <section>
-                <h2>Do início...</h2>
-                <p>Dados simples em tabelas relacionais.</p>
+                <h2>No início...</h2>
                 <img src="image-1.png" alt="Dados estruturados em tabelas relacionais">
             </section>
 
             <!-- Slide 4: Evolução para NoSQL -->
             <section>
                 <h2>Evolução dos dados</h2>
-                <p>Crescimento de dados não estruturados.</p>
                 <img src="image.png" alt="Crescimento de dados não estruturados">
             </section>
 
             <!-- Slide 5: Desafios do NoSQL -->
             <section>
-                <h2>Desafios do NoSQL</h2>
                 <p>Surge a necessidade de bancos de dados vetoriais.</p>
                 <img src="image-3.png" alt="Bancos de dados vetoriais">
             </section>
 
-            <!-- Slide 6: Importância dos BD Vetoriais -->
-            <section>
-                <h2>BD Vetoriais + LLMs</h2>
-                <p>Melhor contexto e eficiência.</p>
-                <img src="image-5.png" alt="LLMs e bancos de dados vetoriais">
-            </section>
+            
 
             <!-- Slide 7: O que são BD Vetoriais -->
             <section>
@@ -93,47 +87,69 @@
                 <p>Otimizados para busca por similaridade.</p>
             </section>
 
+            <!-- Slide 6: Importância dos BD Vetoriais -->
+            <section>
+                <img src="image-5.png" alt="LLMs e bancos de dados vetoriais">
+            </section>
+
             <!-- Slide 8: O que é um vetor -->
             <section>
                 <h2>O que é um vetor?</h2>
                 <p>Lista de números representando características.</p>
-                <pre><code data-trim>
-# Exemplo de vetor
-vetor = [0.1, 0.5, 0.3, 0.7]
+                <pre><code>
+$vector = [0.1, 0.5, 0.3, 0.7]
                 </code></pre>
             </section>
 
             <!-- Slide 9: Como criar vetores -->
             <section>
                 <h2>Criação de vetores</h2>
-                <p>Embeddings via técnicas de ML.</p>
-                <pre><code data-trim data-noescape>
-import openai
-openai.api_key = "api-key"
-def create_vector(text):
-    response = openai.Embedding.create(
-        input=text,
-        model="text-embedding-ada-002"
-    )
-    return response['data'][0]['embedding']
-text = "Text example for vector creation"
-vector = create_vector(text)
-print(vector) # [0.1, 0.5, 0.3, 0.7]
-                </code></pre>
                 <img src="image-6.png" alt="Processo de criação de vetores">
+            </section>
+
+            <section>
+                <h3>Criando vetores com OpenAI (PHP)</h3>
+                <pre><code class="php" data-line-numbers="1-2|4-6|8-19|21-26|28-29">require_once 'vendor/autoload.php'; 
+use GuzzleHttp\Client;
+
+function create_vector($text) {
+    $apiKey = "sua-api-key";
+    $client = new Client();
+    
+    $response = $client->request('POST', 
+    'https://api.openai.com/v1/embeddings', 
+    [
+        'headers' => [
+            'Authorization' => 'Bearer ' . $apiKey,
+            'Content-Type' => 'application/json',
+        ],
+        'json' => [
+            'input' => $text,
+            'model' => 'text-embedding-ada-002'
+        ]
+    ]);
+    
+    $result = json_decode($response
+        ->getBody()
+        ->getContents(), true);
+    
+    return $result['data'][0]['embedding'];
+}
+
+$text = "Text example for vector creation";
+echo create_vector($text);
+                </code></pre>
             </section>
 
             <!-- Slide 10: Armazenamento de vetores -->
             <section>
                 <h2>Armazenamento de vetores</h2>
-                <p>Bancos de dados vetoriais são a solução.</p>
                 <img src="image-4.png" alt="Armazenamento de vetores">
             </section>
 
             <!-- Slide 11: Qdrant -->
             <section>
                 <h2>Qdrant</h2>
-                <p>BD vetorial de código aberto.</p>
                 <p>Otimizado para consultas de similaridade.</p>
             </section>
 
@@ -148,71 +164,108 @@ docker run -p 6333:6333 qdrant/qdrant
             <!-- Slide 13: Usando Qdrant - Criação de coleção -->
             <section>
                 <h2>Criando uma coleção</h2>
-                <pre><code data-trim data-noescape>
-import requests
+                <pre><code class="php" data-line-numbers="1-2|4|6-7|9-15|16-19|21-22">require_once 'vendor/autoload.php';
+use GuzzleHttp\Client;
 
-def create_collection(collection_name):
-    url = f"http://localhost:6333/collections/{collection_name}"
-    response = requests.put(url)
-    if response.status_code == 201:
-        print(f"Collection '{collection_name}' created successfully.")
-    else:
-        print(f"Error creating collection: {response.text}")
-collection_name = "vivaworks_example"
-create_collection(collection_name)
+$db_url = env('DB_URL') ?? 'http://localhost:6333';
+
+function createCollection($collection_name) {
+    $client = new Client();
+    
+    try {
+        $response = $client->request('PUT', 
+            "{$db_url}/collections/{$collection_name}");
+            
+        if ($response->getStatusCode() == 201) {
+            echo "Collection '{$collection_name}' created successfully.";
+        }
+    } catch (\Exception $e) {
+        Log::error("Error creating collection: " . $e->getMessage());
+    }
+}
+
+$collection_name = "vivaworks_example";
+createCollection($collection_name);
                 </code></pre>
             </section>
 
             <!-- Slide 14: Inserção de vetores -->
             <section>
                 <h2>Inserindo vetores</h2>
-                <pre><code data-trim data-noescape>
-import requests
-import uuid
+                <pre><code class="php" data-line-numbers="1-2|4-5|7-9|11-18|20-28|29-32|34-36">require_once 'vendor/autoload.php';
+use GuzzleHttp\Client;
 
-def insert_vector(collection_name, vector_id, vector):
-    url = f"http://localhost:6333/collections/{collection_name}/points"
-    data = {
-        "points": [
-            {
-                "id": vector_id,
-                "vector": vector
-            }
+$db_url = env('DB_URL') ?? 'http://localhost:6333';
+$collection_name = "vivaworks_example";
+
+function insertVector($collection_name, $vector_id, $vector) {
+    global $db_url;
+    $client = new Client();
+    
+    $data = [
+        "points" => [
+            [
+                "id" => $vector_id,
+                "vector" => $vector
+            ]
         ]
+    ];
+    
+    try {
+        $response = $client->request('POST', 
+            "{$db_url}/collections/{$collection_name}/points",
+            ['json' => $data]
+        );
+        
+        if ($response->getStatusCode() == 202) {
+            echo "Vector with ID '{$vector_id}' inserted successfully.";
+        }
+    } catch (\Exception $e) {
+        Log::error("Error inserting vector: " . $e->getMessage());
     }
-    response = requests.post(url, json=data)
-    if response.status_code == 202:
-        print(f"Vector with ID '{vector_id}' inserted successfully.")
-    else:
-        print(f"Error inserting vector: {response.text}")
-collection_name = "vivaworks_example"
-vector_id = uuid.uuid4().hex
-vector = [0.1, 0.5, 0.3, 0.7]
-insert_vector(collection_name, vector_id, vector)
+}
+
+$vector_id = uniqid();
+$vector = [0.1, 0.5, 0.3, 0.7];
+insertVector($collection_name, $vector_id, $vector);
                 </code></pre>
             </section>
 
             <!-- Slide 15: Pesquisa de vetores -->
             <section>
                 <h2>Pesquisando vetores</h2>
-                <pre><code data-trim data-noescape>
-import requests
+                <pre><code class="php" data-line-numbers="1-2|4-5|7-9|11-14|16-25|26-29|31-32">require_once 'vendor/autoload.php';
+use GuzzleHttp\Client;
 
-def search_vectors(collection_name, query_vector, limit=5):
-    url = f"http://localhost:6333/collections/{collection_name}/points/search"
-    data = {
-        "vector": query_vector,
-        "top": limit
+$db_url = env('DB_URL') ?? 'http://localhost:6333';
+$collection_name = "vivaworks_example";
+
+function searchVectors($collection_name, $query_vector, $limit = 5) {
+    global $db_url;
+    $client = new Client();
+    
+    $data = [
+        "vector" => $query_vector,
+        "top" => $limit
+    ];
+    
+    try {
+        $response = $client->request('POST', 
+            "{$db_url}/collections/{$collection_name}/points/search",
+            ['json' => $data]
+        );
+        
+        if ($response->getStatusCode() == 200) {
+            $results = json_decode($response->getBody()->getContents(), true);
+            echo "Search results: " . json_encode($results['result']);
+        }
+    } catch (\Exception $e) {
+        Log::error("Error searching vectors: " . $e->getMessage());
     }
-    response = requests.post(url, json=data)
-    if response.status_code == 200:
-        results = response.json()
-        print(f"Search results: {results}")
-    else:
-        print(f"Error searching vectors: {response.text}")
-collection_name = "vivaworks_example"
-query_vector = [0.1, 0.5, 0.3, 0.7]
-search_vectors(collection_name, query_vector)
+}
+
+$query_vector = [0.1, 0.5, 0.3, 0.7];
+searchVectors($collection_name, $query_vector);
                 </code></pre>
             </section>
 
@@ -225,56 +278,120 @@ search_vectors(collection_name, query_vector)
             <!-- Slide 17-19: Exemplo com LLMs -->
             <section>
                 <h2>Exemplo com LLMs</h2>
-                <pre><code data-trim data-noescape>
-import openai
-openai.api_key = "sua-chave-api-aqui"
-import requests
-import uuid
+                <pre><code class="php" data-line-numbers="1-2|4-5|7-9|11-20|22-23|24-28|30-32|34-41|43-48|49-53|55-57|59-62|64-74|75-79|81-83|85-92|93-95|96-104|108-109|110-114">require_once 'vendor/autoload.php';
+use GuzzleHttp\Client;
 
-# Cria vetor a partir de texto
-def create_vector(text):
-    response = openai.Embedding.create(
-        input=text,
-        model="text-embedding-ada-002"
-    )
-    return response['data'][0]['embedding']
+$db_url = env('DB_URL') ?? 'http://localhost:6333';
+$api_key = env('OPENAI_API_KEY') ?? 'api-key';
 
-# Insere vetor no Qdrant
-def insert_vector(collection_name, vector_id, vector):
-    url = f"http://localhost:6333/collections/{collection_name}/points"
-    data = {
-        "points": [
-            {
-                "id": vector_id,
-                "vector": vector
-            }
-        ]
+function createVector($text) {
+    global $api_key;
+    $client = new Client();
+    
+    try {
+        $response = $client->request('POST', 
+        'https://api.openai.com/v1/embeddings', 
+        [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $api_key,
+                'Content-Type' => 'application/json',
+            ],
+            'json' => ['input' => $text, 'model' => 'text-embedding-ada-002']
+        ]);
+        
+        $result = json_decode($response->getBody()->getContents(), true);
+        return $result['data'][0]['embedding'];
+    } catch (\Exception $e) {
+        Log::error("Error creating vector: " . $e->getMessage());
+        return [];
     }
-    response = requests.post(url, json=data)
-    return response.status_code == 202
+}
 
-# Busca vetores similares
-def search_vectors(collection_name, query_vector, limit=5):
-    url = f"http://localhost:6333/collections/{collection_name}/points/search"
-    data = {
-        "vector": query_vector,
-        "top": limit
-    }
-    response = requests.post(url, json=data)
-    if response.status_code == 200:
-        return response.json()['result']
-    return []
-
-# Gera resposta usando LLM
-def generate_answer(question, context):
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": f"Question: {question}\nContext: {context}"}
+function insertVector($collection_name, $vector_id, $vector) {
+    global $db_url;
+    $client = new Client();
+    
+    $data = [
+        "points" => [
+            [
+                "id" => $vector_id,
+                "vector" => $vector
+            ]
         ]
-    )
-    return response['choices'][0]['message']['content']
+    ];
+    
+    try {
+        $response = $client->request('POST', 
+            "{$db_url}/collections/{$collection_name}/points",
+            ['json' => $data]
+        );
+        return $response->getStatusCode() == 202;
+    } catch (\Exception $e) {
+        Log::error("Error inserting vector: " . $e->getMessage());
+        return false;
+    }
+}
+
+function searchVectors($collection_name, $query_vector, $limit = 5) {
+    global $db_url;
+    $client = new Client();
+    
+    $data = [
+        "vector" => $query_vector,
+        "top" => $limit
+    ];
+    
+    try {
+        $response = $client->request('POST', 
+            "{$db_url}/collections/{$collection_name}/points/search",
+            ['json' => $data]
+        );
+        
+        if ($response->getStatusCode() == 200) {
+            $results = json_decode($response->getBody()->getContents(), true);
+            return $results['result'];
+        }
+        return [];
+    } catch (\Exception $e) {
+        Log::error("Error searching vectors: " . $e->getMessage());
+        return [];
+    }
+}
+
+function generateAnswer($question, $context) {
+    global $api_key;
+    $client = new Client();
+    
+    try {
+        $response = $client->request('POST', 
+        'https://api.openai.com/v1/chat/completions', 
+        [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $api_key,
+                'Content-Type' => 'application/json',
+            ],
+            'json' => [
+                'model' => 'gpt-3.5-turbo',
+                'messages' => [
+                    [
+                        'role' => 'system', 
+                        'content' => 'You are a helpful assistant.'
+                    ],
+                    [
+                        'role' => 'user', 
+                        'content' => "Question: {$question}\nContext: {$context}"
+                    ]
+                ]
+            ]
+        ]);
+        
+        $result = json_decode($response->getBody()->getContents(), true);
+        return $result['choices'][0]['message']['content'];
+    } catch (\Exception $e) {
+        Log::error("Error generating answer: " . $e->getMessage());
+        return "Sorry, I couldn't generate an answer at this time.";
+    }
+}
                 </code></pre>
             </section>
 
@@ -307,16 +424,24 @@ def generate_answer(question, context):
         </div>
     </div>
 
+    <!-- Scripts do Reveal.js e plugins -->
     <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/notes/notes.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/markdown/markdown.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/highlight/highlight.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.0/styles/atom-one-dark.min.css">
+    
     <script>
         Reveal.initialize({
+            controls: true,
+            progress: true,
+            center: true,
             hash: true,
-            slideNumber: true,
-            transition: 'slide',
-            plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+            plugins: [ RevealHighlight ]
+        });
+        
+        // Highlight manual para códigos
+        document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightBlock(block);
         });
     </script>
 </body>
